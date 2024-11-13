@@ -1,10 +1,12 @@
 package dto
 
+import "github.com/google/uuid"
+
 type SendMessageDTO struct {
-	Message  string `json:"message"`
-	StreamID string `json:"stream_id"`
+	Message  string    `json:"message"`
+	StreamID uuid.UUID `json:"stream_id"`
 }
 
 type FetchMessageDTO struct {
-	StreamID string `json:"stream_id"`
+	StreamID uuid.UUID `json:"stream_id"`
 }
