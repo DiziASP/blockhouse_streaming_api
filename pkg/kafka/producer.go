@@ -6,21 +6,26 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-type Producer struct {
+type Producer interface {
+	Produce(ctx context.Context, topic string, key string, data []byte) error
+	Close()
+}
+
+type producer struct {
 	client *kgo.Client
 }
 
-func NewProducer(cfg *config.Configuration) *Producer {
+func NewProducer(cfg *config.Configuration) Producer {
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.Kafka.Brokers...),
 	)
 	if err != nil {
 		panic("Failed to create producer: " + err.Error())
 	}
-	return &Producer{client: client}
+	return &producer{client: client}
 }
 
-func (p *Producer) Produce(ctx context.Context, topic string, key string, data []byte) error {
+func (p *producer) Produce(ctx context.Context, topic string, key string, data []byte) error {
 	record := &kgo.Record{
 		Topic: topic,
 		Key:   []byte(key),
@@ -48,6 +53,6 @@ func (p *Producer) Produce(ctx context.Context, topic string, key string, data [
 	}
 }
 
-func (p *Producer) Close() {
+func (p *producer) Close() {
 	p.client.Close()
 }

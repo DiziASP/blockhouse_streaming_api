@@ -8,12 +8,17 @@ import (
 	"sync"
 )
 
-type Consumer struct {
+type Consumer interface {
+	Consume(ctx context.Context, handler func(data []byte)) error
+	Close()
+}
+
+type consumer struct {
 	client *kgo.Client
 	wg     sync.WaitGroup
 }
 
-func NewConsumer(cfg *config.Configuration, topic string) *Consumer {
+func NewConsumer(cfg *config.Configuration, topic string) Consumer {
 	groupID := uuid.New().String()
 	client, err := kgo.NewClient(
 		kgo.SeedBrokers(cfg.Kafka.Brokers...),
@@ -24,10 +29,10 @@ func NewConsumer(cfg *config.Configuration, topic string) *Consumer {
 	if err != nil {
 		panic("Failed to create consumer: " + err.Error())
 	}
-	return &Consumer{client: client}
+	return &consumer{client: client}
 }
 
-func (c *Consumer) Consume(ctx context.Context, handler func([]byte)) error {
+func (c *consumer) Consume(ctx context.Context, handler func([]byte)) error {
 	c.wg.Add(1)
 	defer c.wg.Done()
 
@@ -43,6 +48,6 @@ func (c *Consumer) Consume(ctx context.Context, handler func([]byte)) error {
 	}
 }
 
-func (c *Consumer) Close() {
+func (c *consumer) Close() {
 	c.client.Close()
 }

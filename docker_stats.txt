@@ -1,0 +1,7 @@
+NAME                         CPU %     MEM USAGE / LIMIT     NET I/O
+grafana                      0.62%     144MiB / 3.829GiB     4.19MB / 6.64MB
+prometheus                   0.00%     74.63MiB / 3.829GiB   73MB / 1.83MB
+blockhouse_streaming_api     51.72%    116.2MiB / 3.829GiB   192MB / 257MB
+redpanda-console             0.09%     60MiB / 3.829GiB      2.38MB / 33.7MB
+redpanda-0                   11.86%    690MiB / 3.829GiB     185MB / 300MB
+buildx_buildkit_mybuilder0   0.00%     246MiB / 3.829GiB     0B / 0B

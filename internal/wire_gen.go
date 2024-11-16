@@ -22,7 +22,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 	logger3 "github.com/gofiber/fiber/v2/middleware/logger"
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"os"
@@ -90,11 +89,6 @@ func NewServerInstance(
 	prometheus.RegisterAt(app, "/metrics")
 	app.Use(prometheus.Middleware)
 
-	app.Use(limiter.New(limiter.Config{
-
-		Max:        cfg.Server.RateLimit,
-		Expiration: 1 * time.Minute,
-	}))
 	app.Use(middleware.RequestIDMiddleware)
 
 	api := app.Group("/")

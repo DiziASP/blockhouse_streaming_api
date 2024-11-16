@@ -3,8 +3,11 @@ networks:
   blockhouse_streaming_api:
     driver: bridge
 volumes:
-  redpanda-0: null
-  grafana-storage: null
+  redpanda-0:  # Redpanda data volume
+    driver: local
+  grafana-data:
+    driver: local
+
 services:
   api:
     build:
@@ -99,7 +102,9 @@ services:
     networks:
       - blockhouse_streaming_api
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
