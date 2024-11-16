@@ -11,8 +11,8 @@ type StreamService struct {
 }
 
 // NewStreamService creates a new instance of StreamService.
-func NewStreamService(repo repository.StreamRepository) *StreamService {
-	return &StreamService{repo: repo}
+func NewStreamService(repo repository.StreamRepository) StreamService {
+	return StreamService{repo: repo}
 }
 
 // CreateStream initializes a new topic/partition in Redpanda and returns the StreamEntity.

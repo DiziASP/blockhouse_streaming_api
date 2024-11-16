@@ -1,0 +1,30 @@
+server:
+  AppName: "Blockhouse Streaming API"
+  AppVersion: 0.0.1
+  BaseURI: 127.0.0.1:8088
+  Prefork: false
+  Port: :8088
+  Mode: Production
+  ReadTimeout: 10
+  WriteTimeout: 10
+  SSL: true
+  CtxDefaultTimeout: 12
+  CSRF: true
+  Debug: false
+  GrRunningThreshold: 100
+  GcPauseThreshold: 10
+  CacheDeploymentType: 1
+
+logger:
+  Development: true
+  DisableCaller: false
+  DisableStacktrace: false
+  Encoding: console
+  Level: info
+
+kafka:
+  Brokers:
+    - "redpanda-0:9092"             # List of Kafka broker addresses
+  TopicPrefix: ""                  # Prefix for all Kafka topics
+  DefaultPartitions: 1             # Number of partitions for new topics
+  DefaultReplication: 1            # Replication factor for new topics

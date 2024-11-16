@@ -3,43 +3,50 @@ package kafka
 import (
 	"blockhouse_streaming_api/internal/app/repository"
 	"blockhouse_streaming_api/internal/domain/entity"
+	"blockhouse_streaming_api/pkg/file/json"
+	"blockhouse_streaming_api/pkg/kafka"
+	"context"
 	"github.com/google/uuid"
-	"github.com/twmb/franz-go/pkg/kgo"
+	"log"
 )
 
 type MessageHandler struct {
-	producer *kgo.Client
-	consumer *kgo.Client
+	producer *kafka.Producer
+	consumer *kafka.Consumer
+	kafkaAdm *kafka.Admin
 }
 
-func NewMessageHandler(brokers []string) repository.MessageRepository {
-	producer, err := kgo.NewClient(
-		kgo.SeedBrokers(brokers...),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	consumer, err := kgo.NewClient(
-		kgo.SeedBrokers(brokers...),
-		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
-	)
-	if err != nil {
-		panic(err)
-	}
-
+func NewMessageHandler(kafkaAdm *kafka.Admin, producer *kafka.Producer, consumer *kafka.Consumer) repository.MessageRepository {
 	return &MessageHandler{
 		producer: producer,
 		consumer: consumer,
+		kafkaAdm: kafkaAdm,
 	}
 }
 
-func (m MessageHandler) SendMessage(msg entity.MessageEntity) error {
-	//TODO implement me
-	panic("implement me")
+func (m MessageHandler) Publish(ctx context.Context, message entity.MessageEntity) error {
+	data, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	topic := message.StreamID.String()
+	err = m.producer.Produce(ctx, topic, data)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Message published to topic %s\n", topic)
+	return nil
 }
 
-func (m MessageHandler) FetchMessage(streamId uuid.UUID) error {
-	//TODO implement me
-	panic("implement me")
+func (m MessageHandler) Consume(ctx context.Context, streamID uuid.UUID, handler func(data []byte)) error {
+	topic := streamID.String()
+	err := m.consumer.Consume(ctx, topic, handler)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Message consumed from topic %s\n", topic)
+	return nil
 }

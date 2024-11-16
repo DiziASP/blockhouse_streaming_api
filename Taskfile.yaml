@@ -1,0 +1,52 @@
+version: '3'
+
+# Set default variables
+vars:
+  BUILD_DIR: "{{.PWD}}/build"
+  MAIN_FILE: "./cmd/main.go"
+  APP_NAME: "blockhouse_streaming_api"
+  SERVER_FILE: "./internal/server.go"
+  MIGRATION_DIR: "{{.PWD}}/migrations"
+
+tasks:
+  # Setup task: installs dependencies and tools
+  setup:
+    cmds:
+      - go mod tidy
+      - sudo go install github.com/google/wire/cmd/wire@latest
+      - sudo go install github.com/swaggo/swag/cmd/swag@latest
+    desc: "Setup the project by installing dependencies and tools"
+
+  # Test task: runs go tests
+  test:
+    cmds:
+      - go test ./...
+    desc: "Run all tests"
+
+  # Clean task: removes the build directory
+  clean:
+    cmds:
+      - echo "remove bin exe"
+      - rm -rf "{{.BUILD_DIR}}"
+    desc: "Clean the build directory by removing binaries"
+
+  # Build task: builds the binary
+  build:
+    cmds:
+      - go build -ldflags="-w -s" -o "{{.BUILD_DIR}}/{{.APP_NAME}}" "{{.MAIN_FILE}}"
+    desc: "Build the project binary"
+
+  # Wire task: runs wire in the internal folder
+  wire:
+    cmds:
+      - cd internal && wire
+    desc: "Generate dependency injection code with wire"
+
+  # Local run task: runs the app locally
+  local:
+    deps:
+      - wire
+      - build
+    cmds:
+      - "{{.BUILD_DIR}}/{{.APP_NAME}}"
+    desc: "Run the application locally"

@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"blockhouse_streaming_api/config"
 	"context"
 	"fmt"
 	"github.com/twmb/franz-go/pkg/kadm"
@@ -8,18 +9,22 @@ import (
 )
 
 type Admin struct {
+	cfg    *config.Configuration
 	client *kadm.Client
 }
 
-func NewAdmin(brokers []string) *Admin {
+func NewAdmin(cfg *config.Configuration) *Admin {
 	client, err := kgo.NewClient(
-		kgo.SeedBrokers(brokers...),
+		kgo.SeedBrokers(cfg.Kafka.Brokers...),
 	)
 	if err != nil {
 		panic(err)
 	}
 	admin := kadm.NewClient(client)
-	return &Admin{client: admin}
+	return &Admin{
+		cfg:    cfg,
+		client: admin,
+	}
 }
 func (a *Admin) TopicExists(topic string) bool {
 	ctx := context.Background()

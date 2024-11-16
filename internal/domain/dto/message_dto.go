@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type SendMessageDTO struct {
 	Message  string    `json:"message"`
@@ -8,5 +11,7 @@ type SendMessageDTO struct {
 }
 
 type FetchMessageDTO struct {
-	StreamID uuid.UUID `json:"stream_id"`
+	StreamID  uuid.UUID `json:"stream_id"`
+	Message   string    `json:"message"`
+	Timestamp time.Time `json:"timestamp"`
 }

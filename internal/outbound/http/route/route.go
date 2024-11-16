@@ -1,8 +1,15 @@
 package route
 
 import (
+	"blockhouse_streaming_api/internal/common/utils"
 	"blockhouse_streaming_api/internal/outbound/http/controller"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/wire"
+)
+
+var Set = wire.NewSet(
+	NewMainRouter,
 )
 
 type MainRouter interface {
@@ -15,10 +22,11 @@ type mainRouter struct {
 }
 
 func (v mainRouter) Init(root *fiber.Router) {
-	mainRouter := (*root).Group("/v1")
+	mainRouter := (*root).Group("/stream")
 	{
+		mainRouter.Post("/start", v.streamApi.CreateStream)
 		mainRouter.Post("/:id/send", v.messageApi.SendMessage)
-		mainRouter.Get("/:id/results", v.messageApi.FetchMessage)
+		mainRouter.Get("/:id/results", utils.WebsocketHandler, websocket.New(v.messageApi.FetchMessage))
 	}
 }
 

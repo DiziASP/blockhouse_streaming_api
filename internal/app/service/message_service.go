@@ -3,37 +3,27 @@ package service
 import (
 	"blockhouse_streaming_api/internal/app/repository"
 	"blockhouse_streaming_api/internal/domain/dto"
-	"blockhouse_streaming_api/internal/domain/entity"
-	timePkg "blockhouse_streaming_api/pkg/time"
 	"context"
+	"github.com/google/uuid"
 )
 
 type MessageService struct {
-	repo         repository.MessageRepository
-	timeProvider timePkg.Provider
+	repo repository.MessageRepository
 }
 
 // NewMessageService creates a new instance of MessageService.
-func NewMessageService(repo repository.MessageRepository, timeProvider timePkg.Provider) *MessageService {
-	return &MessageService{
-		repo:         repo,
-		timeProvider: timeProvider,
+func NewMessageService(repo repository.MessageRepository) MessageService {
+	return MessageService{
+		repo: repo,
 	}
 }
 
 // SendMessage publishes a message to the specified stream.
 func (s *MessageService) SendMessage(ctx context.Context, req *dto.SendMessageDTO) error {
-	data := entity.MessageEntity{
-		Message:   req.Message,
-		Timestamp: s.timeProvider.Now(),
-	}
-
-	return s.repo.SendMessage(data)
+	panic("implement me")
 }
 
-// FetchMessage subscribes to a stream and read incoming messages.
-func (s *MessageService) FetchMessage(ctx context.Context, req *dto.FetchMessageDTO) error {
-	streamId := req.StreamID
-
-	return s.repo.FetchMessage(streamId)
+// FetchMessage subscribes to a stream and streams messages using a callback function.
+func (s *MessageService) FetchMessage(ctx context.Context, streamID uuid.UUID, handler func(dto.FetchMessageDTO)) error {
+	panic("implement me")
 }

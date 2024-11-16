@@ -4,26 +4,27 @@ import (
 	"blockhouse_streaming_api/internal/app/repository"
 	"blockhouse_streaming_api/internal/domain/entity"
 	"blockhouse_streaming_api/pkg/kafka"
-	"github.com/google/uuid"
+	"blockhouse_streaming_api/pkg/uuid"
+	"errors"
 )
 
 type StreamHandler struct {
 	kafkaAdm *kafka.Admin
 }
 
-func NewStreamHandler(kafkaAdm kafka.Admin) repository.StreamRepository {
+func NewStreamHandler(kafkaAdm *kafka.Admin) repository.StreamRepository {
 	return &StreamHandler{
-		kafkaAdm: &kafkaAdm,
+		kafkaAdm: kafkaAdm,
 	}
 }
 
 func (s StreamHandler) CreateStream() (*entity.StreamEntity, error) {
-	streamId, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
+	streamId := uuid.NewUUIDProvider().NewUUID()
+
+	if !s.kafkaAdm.TopicExists(streamId.String()) {
+		s.kafkaAdm.CreateTopic(streamId.String())
+		return &entity.StreamEntity{StreamID: streamId}, nil
 	}
 
-	s.kafkaAdm.CreateTopic(streamId.String())
-
-	return &entity.StreamEntity{StreamID: streamId}, nil
+	return nil, errors.New("topic already exists")
 }
