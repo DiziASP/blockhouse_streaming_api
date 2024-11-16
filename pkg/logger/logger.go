@@ -26,7 +26,8 @@ type Logger interface {
 	DPanicf(template string, args ...interface{})
 	Panicf(template string, args ...interface{})
 	Fatalf(template string, args ...interface{})
-	WithFiled(field zapcore.Field) *zap.Logger
+	WithField(field zapcore.Field) *zap.Logger
+	WithFields(fields ...zap.Field) *zap.SugaredLogger
 }
 
 // Logger Instance

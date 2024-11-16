@@ -22,11 +22,12 @@ WORKDIR /app
 COPY --from=builder /app/blockhouse_streaming_api .
 COPY ./config ./config
 
+RUN apk --no-cache add curl
 
 RUN chown -R appuser:appgroup /app && chmod +x blockhouse_streaming_api
 
 USER appuser
 
-EXPOSE 8081
+EXPOSE 8088
 
 CMD ["./blockhouse_streaming_api"]

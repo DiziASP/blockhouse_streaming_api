@@ -29,6 +29,7 @@ type ServerConfig struct {
 	Prefork             bool
 	ReadTimeout         time.Duration
 	WriteTimeout        time.Duration
+	RateLimit           int
 	SSL                 bool
 	CtxDefaultTimeout   time.Duration
 	CSRF                bool
@@ -36,6 +37,7 @@ type ServerConfig struct {
 	GrRunningThreshold  int //  threshold for goroutines are running (which could indicate a resource leak).
 	GcPauseThreshold    int //  threshold garbage collection pause exceeds. (Millisecond)
 	CacheDeploymentType int
+	ApiKey              string
 }
 
 // Logger config

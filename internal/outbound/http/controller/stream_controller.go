@@ -3,6 +3,8 @@ package controller
 import (
 	"blockhouse_streaming_api/internal/app/service"
 	responses "blockhouse_streaming_api/internal/common/response"
+	zapLogger "blockhouse_streaming_api/pkg/logger"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -12,11 +14,12 @@ type StreamController interface {
 
 type streamController struct {
 	streamService service.StreamService
+	logger        zapLogger.Logger
 }
 
 // NewStreamController Constructor
-func NewStreamController(streamService service.StreamService) StreamController {
-	return &streamController{streamService: streamService}
+func NewStreamController(streamService service.StreamService, logger zapLogger.Logger) StreamController {
+	return &streamController{streamService: streamService, logger: logger}
 }
 
 // CreateStream Create new channel stream
@@ -34,10 +37,12 @@ func (s streamController) CreateStream(ctx *fiber.Ctx) error {
 
 	data, err := s.streamService.CreateStream(context)
 	if err != nil {
+		s.logger.Errorf("Failed to create new stream: " + err.Error())
 		return err
 	}
 
 	resp := responses.DefaultSuccessResponse
+	resp.Message = fmt.Sprintf("Stream %s created successfully", data.StreamID.String())
 	resp.Data = data
 	return resp.JSON(ctx)
 }

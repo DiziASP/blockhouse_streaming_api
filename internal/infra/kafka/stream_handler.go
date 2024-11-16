@@ -5,6 +5,7 @@ import (
 	"blockhouse_streaming_api/internal/domain/entity"
 	"blockhouse_streaming_api/pkg/kafka"
 	"blockhouse_streaming_api/pkg/uuid"
+	"context"
 	"errors"
 )
 
@@ -18,7 +19,7 @@ func NewStreamHandler(kafkaAdm *kafka.Admin) repository.StreamRepository {
 	}
 }
 
-func (s StreamHandler) CreateStream() (*entity.StreamEntity, error) {
+func (s StreamHandler) CreateStream(ctx context.Context) (*entity.StreamEntity, error) {
 	streamId := uuid.NewUUIDProvider().NewUUID()
 
 	if !s.kafkaAdm.TopicExists(streamId.String()) {

@@ -15,13 +15,37 @@ func NewProducer(cfg *config.Configuration) *Producer {
 		kgo.SeedBrokers(cfg.Kafka.Brokers...),
 	)
 	if err != nil {
-		panic(err)
+		panic("Failed to create producer: " + err.Error())
 	}
 	return &Producer{client: client}
 }
 
-func (p *Producer) Produce(ctx context.Context, topic string, data []byte) error {
-	panic("implement me")
+func (p *Producer) Produce(ctx context.Context, topic string, key string, data []byte) error {
+	record := &kgo.Record{
+		Topic: topic,
+		Key:   []byte(key),
+		Value: data,
+	}
+
+	// Define a channel to capture the result of the Produce call
+	errChan := make(chan error, 1)
+
+	// Produce the message with a callback to capture the result
+	p.client.Produce(ctx, record, func(rec *kgo.Record, err error) {
+		if err != nil {
+			errChan <- err
+		} else {
+			errChan <- nil
+		}
+	})
+
+	// Wait for the result and return the error if any
+	select {
+	case err := <-errChan:
+		return err
+	case <-ctx.Done():
+		return ctx.Err() // Handle context cancellation
+	}
 }
 
 func (p *Producer) Close() {

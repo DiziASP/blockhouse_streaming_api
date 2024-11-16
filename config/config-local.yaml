@@ -7,6 +7,7 @@ server:
   Mode: Production
   ReadTimeout: 10
   WriteTimeout: 10
+  RateLimit: 100
   SSL: true
   CtxDefaultTimeout: 12
   CSRF: true
@@ -14,6 +15,7 @@ server:
   GrRunningThreshold: 100
   GcPauseThreshold: 10
   CacheDeploymentType: 1
+  ApiKey: 876a967c-c896-49b2-8a27-ddb8d3260798
 
 logger:
   Development: true

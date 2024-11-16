@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func (l *apiLogger) WithFiled(field zap.Field) *zap.Logger {
+func (l *apiLogger) WithField(field zap.Field) *zap.Logger {
 	return l.logger.With(field)
 }
 
@@ -66,6 +66,10 @@ func (l *apiLogger) InitLogger() {
 			l.sugarLogger.Error(err)
 		}
 	}
+}
+
+func (l *apiLogger) WithFields(fields ...zap.Field) *zap.SugaredLogger {
+	return l.logger.With(fields...).Sugar()
 }
 
 // Logger methods

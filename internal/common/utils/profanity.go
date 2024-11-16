@@ -1,17 +1,12 @@
 package utils
 
-import "strings"
+import (
+	"github.com/TwiN/go-away"
+)
 
-// List of offensive words to filter (expand this list as needed)
-var offensiveWords = []string{"fuck", "shit", "damn"}
-
-// ProfanityFilter replaces offensive words with asterisks
+// ProfanityFilter replaces offensive words with asterisks using the go-away library
 func ProfanityFilter(message string) string {
-	sanitizedMessage := message
-	for _, word := range offensiveWords {
-		if strings.Contains(strings.ToLower(sanitizedMessage), strings.ToLower(word)) {
-			sanitizedMessage = strings.ReplaceAll(sanitizedMessage, word, "****")
-		}
-	}
+	sanitizedMessage := goaway.Censor(message)
+
 	return sanitizedMessage
 }

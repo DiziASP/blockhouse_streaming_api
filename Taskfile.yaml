@@ -33,7 +33,8 @@ tasks:
   # Build task: builds the binary
   build:
     cmds:
-      - go build -ldflags="-w -s" -o "{{.BUILD_DIR}}/{{.APP_NAME}}" "{{.MAIN_FILE}}"
+      - docker compose up --remove-orphans -d --build
+    #      - go build -ldflags="-w -s" -o "{{.BUILD_DIR}}/{{.APP_NAME}}" "{{.MAIN_FILE}}"
     desc: "Build the project binary"
 
   # Wire task: runs wire in the internal folder
@@ -47,6 +48,4 @@ tasks:
     deps:
       - wire
       - build
-    cmds:
-      - "{{.BUILD_DIR}}/{{.APP_NAME}}"
     desc: "Run the application locally"

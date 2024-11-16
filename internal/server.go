@@ -6,16 +6,20 @@ package internal
 import (
 	"blockhouse_streaming_api/config"
 	"blockhouse_streaming_api/internal/app/service"
+	"blockhouse_streaming_api/internal/common/errors"
 	"blockhouse_streaming_api/internal/common/logger"
 	"blockhouse_streaming_api/internal/infra"
 	"blockhouse_streaming_api/internal/outbound/http/controller"
+	"blockhouse_streaming_api/internal/outbound/http/middleware"
 	"blockhouse_streaming_api/internal/outbound/http/route"
 	"blockhouse_streaming_api/pkg/file/json"
 	"blockhouse_streaming_api/pkg/kafka"
 	loggerPkg "blockhouse_streaming_api/pkg/logger"
+	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	fiberLog "github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/wire"
@@ -38,7 +42,6 @@ func New() (*Server, error) {
 		logger.Set,
 		controller.Set,
 		kafka.Set,
-		//sessions.Set,
 		NewServerInstance,
 	)))
 }
@@ -50,9 +53,9 @@ func NewServerInstance(
 ) *Server {
 	// Initialize Fiber App
 	app := fiber.New(fiber.Config{
-		AppName: cfg.Server.Name,
-		Prefork: cfg.Server.Prefork,
-		//ErrorHandler: errors.CustomErrorHandler,
+		AppName:      cfg.Server.Name,
+		Prefork:      cfg.Server.Prefork,
+		ErrorHandler: errors.CustomErrorHandler,
 		ReadTimeout:  time.Second * cfg.Server.ReadTimeout,
 		WriteTimeout: time.Second * cfg.Server.WriteTimeout,
 		JSONDecoder:  json.Unmarshal,
@@ -73,6 +76,16 @@ func NewServerInstance(
 		TimeInterval: 500 * time.Millisecond,
 		Output:       os.Stdout,
 	}))
+	prometheus := fiberprometheus.New("blockhouse-streaming-api")
+	prometheus.RegisterAt(app, "/metrics")
+	app.Use(prometheus.Middleware)
+
+	app.Use(limiter.New(limiter.Config{
+		// Add Rate limit n request/minute
+		Max:        cfg.Server.RateLimit,
+		Expiration: 1 * time.Minute,
+	}))
+	app.Use(middleware.RequestIDMiddleware)
 
 	api := app.Group("/") // Initialize Root Route
 	mainRouter.Init(&api)

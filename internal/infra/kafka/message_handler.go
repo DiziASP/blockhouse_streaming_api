@@ -1,52 +1,46 @@
 package kafka
 
 import (
+	"blockhouse_streaming_api/config"
 	"blockhouse_streaming_api/internal/app/repository"
 	"blockhouse_streaming_api/internal/domain/entity"
 	"blockhouse_streaming_api/pkg/file/json"
 	"blockhouse_streaming_api/pkg/kafka"
 	"context"
 	"github.com/google/uuid"
-	"log"
+	"strconv"
 )
 
 type MessageHandler struct {
-	producer *kafka.Producer
-	consumer *kafka.Consumer
+	cfg      *config.Configuration
 	kafkaAdm *kafka.Admin
 }
 
-func NewMessageHandler(kafkaAdm *kafka.Admin, producer *kafka.Producer, consumer *kafka.Consumer) repository.MessageRepository {
+func NewMessageHandler(cfg *config.Configuration, kafkaAdm *kafka.Admin) repository.MessageRepository {
 	return &MessageHandler{
-		producer: producer,
-		consumer: consumer,
+		cfg:      cfg,
 		kafkaAdm: kafkaAdm,
 	}
 }
 
-func (m MessageHandler) Publish(ctx context.Context, message entity.MessageEntity) error {
+func (m *MessageHandler) Publish(ctx context.Context, message entity.MessageEntity) error {
+	topic := message.StreamID.String() // Use StreamID as the topic name
+	key := strconv.FormatInt(message.Timestamp.UnixMilli(), 10)
 	data, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 
-	topic := message.StreamID.String()
-	err = m.producer.Produce(ctx, topic, data)
-	if err != nil {
-		return err
-	}
+	producer := kafka.NewProducer(m.cfg)
+	defer producer.Close()
 
-	log.Printf("Message published to topic %s\n", topic)
-	return nil
+	return producer.Produce(ctx, topic, key, data)
 }
 
-func (m MessageHandler) Consume(ctx context.Context, streamID uuid.UUID, handler func(data []byte)) error {
+func (m *MessageHandler) Consume(ctx context.Context, streamID uuid.UUID, handler func(data []byte)) error {
 	topic := streamID.String()
-	err := m.consumer.Consume(ctx, topic, handler)
-	if err != nil {
-		return err
-	}
+	consumer := kafka.NewConsumer(m.cfg, topic)
+	defer consumer.Close()
 
-	log.Printf("Message consumed from topic %s\n", topic)
-	return nil
+	return consumer.Consume(ctx, handler)
 }

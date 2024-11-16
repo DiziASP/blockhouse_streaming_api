@@ -7,7 +7,7 @@ import (
 
 type SendMessageDTO struct {
 	Message  string    `json:"message"`
-	StreamID uuid.UUID `json:"stream_id"`
+	StreamID uuid.UUID `json:"stream_id,omitempty"`
 }
 
 type FetchMessageDTO struct {

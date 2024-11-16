@@ -4,6 +4,7 @@ networks:
     driver: bridge
 volumes:
   redpanda-0: null
+  grafana-storage: null
 services:
   api:
     build:
@@ -52,6 +53,7 @@ services:
       - 18082:18082
       - 19092:19092
       - 19644:9644
+
   console:
     container_name: redpanda-console
     image: docker.redpanda.com/redpandadata/console:v2.7.2
@@ -75,3 +77,30 @@ services:
       - 8080:8080
     depends_on:
       - redpanda-0
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - blockhouse_streaming_api
+    depends_on:
+      - api
+      - redpanda-0
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - blockhouse_streaming_api
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
